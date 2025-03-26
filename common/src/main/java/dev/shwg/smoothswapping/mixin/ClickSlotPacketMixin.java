@@ -13,9 +13,7 @@ import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.screen.sync.ItemStackHash;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -24,27 +22,13 @@ import java.util.Map;
 
 @Mixin(ClickSlotC2SPacket.class)
 public class ClickSlotPacketMixin {
-
-    @Shadow
-    @Final
-    private SlotActionType actionType;
-
-    @Shadow
-    @Final
-    private Int2ObjectMap<ItemStackHash> modifiedStacks;
-
-    //id of slot that got clicked/hovered over
-    @Shadow
-    @Final
-    private short slot;
-
     @Inject(method = "<init>", at = @At("TAIL"))
     public void onInit(int syncId, int revision, short slot, byte button, SlotActionType actionType, Int2ObjectMap<ItemStackHash> modifiedStacks, ItemStackHash cursor, CallbackInfo cbi) {
         if (!ConfigManager.getConfig().getToggleMod())
             return;
 
         //remove swap when stack gets moved before it arrived
-        SmoothSwapping.swaps.remove((int) slot); // Cast short to int for remove operation
+        SmoothSwapping.swaps.remove((int) slot);
 
         if ((actionType == SlotActionType.QUICK_MOVE || actionType == SlotActionType.SWAP) && modifiedStacks.size() > 1 && MinecraftClient.getInstance().currentScreen instanceof HandledScreen) {
             assert MinecraftClient.getInstance().player != null;
