@@ -13,14 +13,14 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Vector3f;
+import org.joml.Matrix3x2f;
+import org.joml.Matrix3x2fStack;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -39,7 +39,7 @@ public abstract class DrawContextMixin {
 
     @Final
     @Shadow
-    private MatrixStack matrices;
+    private Matrix3x2fStack matrices;
     @Final
     @Shadow
     private MinecraftClient client;
@@ -165,16 +165,17 @@ public abstract class DrawContextMixin {
         double renderX = -swap.getStartX() - Math.cos(angle) * swap.getDistance() * ease;
         double renderY = swap.getStartY() + Math.sin(angle) * swap.getDistance() * ease;
 
-        matrices.push();
-        matrices.translate(renderX, -renderY, 350);
+        matrices.pushMatrix();
+        matrices.translate((float) renderX, (float) -renderY);
 
-        drawItem(copiedStack, x, y);
+
 
         double speed = swap.getDistance() / 10 * config.getAnimationSpeedFormatted();
 
         swap.setX(swapX + lastFrameDuration * speed * Math.cos(angle));
         swap.setY(swapY + lastFrameDuration * speed * Math.sin(angle));
-        matrices.pop();
+        drawItem(copiedStack, x, y);
+        matrices.popMatrix();
     }
 
     @Inject(method = "drawStackOverlay(Lnet/minecraft/client/font/TextRenderer;Lnet/minecraft/item/ItemStack;IILjava/lang/String;)V", at = @At("HEAD"), cancellable = true)
@@ -226,15 +227,15 @@ public abstract class DrawContextMixin {
                     double renderX = -swap.getStartX() - (Math.cos(angle) * swap.getDistance() * ease);
                     double renderY = swap.getStartY() + (Math.sin(angle) * swap.getDistance() * ease);
 
-                    matrices.push();
-                    matrices.translate(renderX, -renderY, 350);
+                    matrices.pushMatrix();
+                    matrices.translate((float) renderX, (float) -renderY);
 
                     if (stack.isItemBarVisible())
                         drawStackOverlay(client.textRenderer, stack.copy(), x, y, null);
                     else
                         drawStackOverlay(client.textRenderer, stack.copy(), x, y, amount);
 
-                    matrices.pop();
+                    matrices.popMatrix();
                 }
 
             }
@@ -249,8 +250,8 @@ public abstract class DrawContextMixin {
 
     @Unique
     private boolean smooth_Swapping$isHotbar() {
-        Vector3f zOffset = new Vector3f();
-        matrices.peek().getPositionMatrix().getColumn(3, zOffset);
-        return zOffset.round().x <= 0;
+        Matrix3x2f curr = matrices;
+        float xTranslation = curr.m20;
+        return Math.round(xTranslation) <= 0;
     }
 }
