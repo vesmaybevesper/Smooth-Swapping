@@ -47,14 +47,14 @@ public abstract class DrawContextMixin {
     public abstract void drawItem(ItemStack item, int x, int y);
     @Shadow public abstract void drawStackOverlay(TextRenderer textRenderer, ItemStack stack, int x, int y, @Nullable String countOverride);
 
-    @Inject(method = "drawItem(Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/world/World;Lnet/minecraft/item/ItemStack;IIII)V", at = @At("HEAD"), cancellable = true)
-    public void onItemDraw(LivingEntity entity, World world, ItemStack stack, int x, int y, int seed, int z, CallbackInfo cbi) {
+    @Inject(method = "drawItem(Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/world/World;Lnet/minecraft/item/ItemStack;III)V", at = @At("HEAD"), cancellable = true)
+    public void onItemDraw(LivingEntity entity, World world, ItemStack stack, int x, int y, int seed, CallbackInfo ci) {
         if (smooth_Swapping$isHotbar() && !(client.currentScreen instanceof ConfigScreen)) return;
 
         if (((ItemStackAccessor) (Object) stack).smooth_Swapping$isSwapStack()) return;
 
         try {
-            smooth_Swapping$doSwap(stack, x, y, cbi);
+            smooth_Swapping$doSwap(stack, x, y, ci);
         } catch (Exception e) {
             SwapUtil.reset();
         }
