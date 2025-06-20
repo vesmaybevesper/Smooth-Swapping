@@ -62,7 +62,6 @@ public class InventoryWidget extends ClickableWidget {
 
     @Override
     public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
-        RenderPipeline.builder().build();
 
         //Render Border
         context.drawTexture(RenderPipelines.GUI_TEXTURED, TEXTURE, this.getX(), this.getY(), 0, 0, borderWidth, height - borderWidth, 256, 256); //left border
